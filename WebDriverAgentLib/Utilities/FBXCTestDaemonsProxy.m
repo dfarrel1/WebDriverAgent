@@ -124,6 +124,10 @@ static void swizzledLaunchApp(id self, SEL _cmd, NSString *path, NSString *bundl
     }
     @synchronized (inFlight) { [inFlight removeObject:record]; }
   }];
+  // The touch path is streamed by XCTest while the run loop turns; without the awaiting spinner the gesture
+  // stopped after the first touch (00:45). A quarter second of run loop covers the finger's part of a flick;
+  // the inertia afterwards is the app's own.
+  [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
   return YES;
 }
 
