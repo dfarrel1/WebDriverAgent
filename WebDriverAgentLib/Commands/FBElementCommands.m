@@ -373,11 +373,13 @@
   if (nil == endCoordinate) {
     return FBResponseWithStatus([FBCommandStatus invalidElementStateErrorWithMessage:error.description traceback:nil]);
   }
+  BOOL waitForCompletion = nil == request.arguments[@"waitForCompletion"] ? YES : [request.arguments[@"waitForCompletion"] boolValue];
   if (![application fb_pressAtCoordinate:startCoordinate
                              forDuration:[request.arguments[@"pressDuration"] doubleValue]
                     thenDragToCoordinate:endCoordinate
                             withVelocity:[request.arguments[@"velocity"] doubleValue]
                      thenHoldForDuration:[request.arguments[@"holdDuration"] doubleValue]
+                       waitForCompletion:waitForCompletion
                                    error:&error]) {
     return FBResponseWithStatus([FBCommandStatus invalidElementStateErrorWithMessage:error.description traceback:nil]);
   }

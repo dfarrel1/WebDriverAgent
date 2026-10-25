@@ -53,6 +53,19 @@ NS_ASSUME_NONNULL_BEGIN
          thenHoldForDuration:(NSTimeInterval)holdDuration
                        error:(NSError * _Nullable*)error;
 
+/**
+ The same drag. With waitForCompletion NO the call returns as soon as the event record is handed to
+ XCTest's synthesizer: no wait for XCTest's completion (which on an always-animating app is its
+ ~15 s idle timeout, measured 2026-10-25) and no stability wait afterwards.
+ */
+- (BOOL)fb_pressAtCoordinate:(XCUICoordinate *)startCoordinate
+                 forDuration:(NSTimeInterval)pressDuration
+        thenDragToCoordinate:(XCUICoordinate *)endCoordinate
+                withVelocity:(XCUIGestureVelocity)velocity
+         thenHoldForDuration:(NSTimeInterval)holdDuration
+           waitForCompletion:(BOOL)waitForCompletion
+                       error:(NSError * _Nullable*)error;
+
 #if !TARGET_OS_TV && !TARGET_OS_WATCH
 /**
  Builds the synthesized event used by

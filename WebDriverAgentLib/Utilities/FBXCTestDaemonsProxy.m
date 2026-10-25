@@ -103,6 +103,21 @@ static void swizzledLaunchApp(id self, SEL _cmd, NSString *path, NSString *bundl
   return ((XCTRunnerDaemonSession *)[XCTRunnerDaemonSession sharedSession]).daemonProxy;
 }
 
++ (BOOL)synthesizeEventWithRecord:(XCSynthesizedEventRecord *)record
+                waitForCompletion:(BOOL)waitForCompletion
+                            error:(NSError *__autoreleasing*)error
+{
+  if (waitForCompletion) {
+    return [self synthesizeEventWithRecord:record error:error];
+  }
+  [[XCUIDevice.sharedDevice eventSynthesizer] synthesizeEvent:record completion:(id)^(BOOL result, NSError *invokeError) {
+    if (!result) {
+      [FBLogger logFmt:@"Event synthesis finished with an error (not awaited): %@", invokeError];
+    }
+  }];
+  return YES;
+}
+
 + (BOOL)synthesizeEventWithRecord:(XCSynthesizedEventRecord *)record error:(NSError *__autoreleasing*)error
 {
   __block NSError *innerError = nil;

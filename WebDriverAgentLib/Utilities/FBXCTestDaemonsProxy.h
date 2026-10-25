@@ -26,6 +26,15 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)synthesizeEventWithRecord:(XCSynthesizedEventRecord *)record
                             error:(NSError *__autoreleasing*)error;
 
+/**
+ Synthesizes the event and, when waitForCompletion is NO, returns as soon as the record is handed to
+ XCTest's event synthesizer instead of blocking until its completion fires (on an always-animating app
+ that completion is XCTest's ~15 s idle timeout; measured 2026-10-25).
+ */
++ (BOOL)synthesizeEventWithRecord:(XCSynthesizedEventRecord *)record
+                waitForCompletion:(BOOL)waitForCompletion
+                            error:(NSError **)error;
+
 + (BOOL)openURL:(NSURL *)url usingApplication:(NSString *)bundleId error:(NSError **)error;
 + (BOOL)openDefaultApplicationForURL:(NSURL *)url error:(NSError **)error;
 

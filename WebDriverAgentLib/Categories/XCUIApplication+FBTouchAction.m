@@ -122,6 +122,18 @@ static BOOL FBIsFinitePoint(CGPoint point)
          thenHoldForDuration:(NSTimeInterval)holdDuration
                        error:(NSError **)error
 {
+  return [self fb_pressAtCoordinate:startCoordinate forDuration:pressDuration thenDragToCoordinate:endCoordinate
+                       withVelocity:velocity thenHoldForDuration:holdDuration waitForCompletion:YES error:error];
+}
+
+- (BOOL)fb_pressAtCoordinate:(XCUICoordinate *)startCoordinate
+                 forDuration:(NSTimeInterval)pressDuration
+        thenDragToCoordinate:(XCUICoordinate *)endCoordinate
+                withVelocity:(XCUIGestureVelocity)velocity
+         thenHoldForDuration:(NSTimeInterval)holdDuration
+           waitForCompletion:(BOOL)waitForCompletion
+                       error:(NSError **)error
+{
   CGFloat pointsPerSecond = FBPointsPerSecondForDragVelocity(velocity);
   if (!isfinite(pressDuration) || pressDuration < 0 || !isfinite(holdDuration) || holdDuration < 0) {
     NSString *reason = [NSString stringWithFormat:@"Drag press and hold durations must be non-negative numbers of seconds. Got %@ and %@", @(pressDuration), @(holdDuration)];
@@ -154,6 +166,9 @@ static BOOL FBIsFinitePoint(CGPoint point)
                                                        thenHoldForDuration:holdDuration
                                                                  displayID:displayID
                                                       interfaceOrientation:self.interfaceOrientation];
+  if (!waitForCompletion) {
+    return [FBXCTestDaemonsProxy synthesizeEventWithRecord:event waitForCompletion:NO error:error];
+  }
   if (![self fb_synthesizeEvent:event error:error]) {
     return NO;
   }
