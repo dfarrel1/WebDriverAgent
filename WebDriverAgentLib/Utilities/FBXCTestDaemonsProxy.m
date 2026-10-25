@@ -111,11 +111,18 @@ static void swizzledLaunchApp(id self, SEL _cmd, NSString *path, NSString *bundl
     return [self synthesizeEventWithRecord:record error:error];
   }
   // Inline on the handler's thread, completion not awaited. Off the main thread (a background queue) XCTest
-  // drops the event: the reply came in 0.3 s and the card did not scroll (measured 2026-10-26 00:30).
+  // drops the event: the reply came in 0.3 s and the card did not scroll (measured 2026-10-26 00:30). With
+  // nothing holding the record after the handler returns, the gesture stopped after the first touch (00:40):
+  // the record is kept alive here until its completion fires.
+  static NSMutableSet *inFlight = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{ inFlight = [NSMutableSet set]; });
+  @synchronized (inFlight) { [inFlight addObject:record]; }
   [[XCUIDevice.sharedDevice eventSynthesizer] synthesizeEvent:record completion:(id)^(BOOL result, NSError *invokeError) {
     if (!result) {
       [FBLogger logFmt:@"Event synthesis finished with an error (not awaited): %@", invokeError];
     }
+    @synchronized (inFlight) { [inFlight removeObject:record]; }
   }];
   return YES;
 }
