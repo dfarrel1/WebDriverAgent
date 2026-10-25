@@ -355,7 +355,9 @@
 
 + (id<FBResponsePayload>)handlePressAndDragCoordinateWithVelocity:(FBRouteRequest *)request
 {
+  NSTimeInterval t0 = [NSDate timeIntervalSinceReferenceDate];
   XCUIApplication *application = request.session.activeApplication;
+  [FBLogger logFmt:@"[drag timing] active application resolved after %.2fs", [NSDate timeIntervalSinceReferenceDate] - t0];
   NSError *error;
   CGVector startOffset = CGVectorMake((CGFloat)[request.arguments[@"fromX"] doubleValue],
                                      (CGFloat)[request.arguments[@"fromY"] doubleValue]);
@@ -373,6 +375,7 @@
   if (nil == endCoordinate) {
     return FBResponseWithStatus([FBCommandStatus invalidElementStateErrorWithMessage:error.description traceback:nil]);
   }
+  [FBLogger logFmt:@"[drag timing] coordinates resolved after %.2fs", [NSDate timeIntervalSinceReferenceDate] - t0];
   BOOL waitForCompletion = nil == request.arguments[@"waitForCompletion"] ? YES : [request.arguments[@"waitForCompletion"] boolValue];
   if (![application fb_pressAtCoordinate:startCoordinate
                              forDuration:[request.arguments[@"pressDuration"] doubleValue]
@@ -383,6 +386,7 @@
                                    error:&error]) {
     return FBResponseWithStatus([FBCommandStatus invalidElementStateErrorWithMessage:error.description traceback:nil]);
   }
+  [FBLogger logFmt:@"[drag timing] drag call returned after %.2fs (waitForCompletion %d)", [NSDate timeIntervalSinceReferenceDate] - t0, waitForCompletion];
   return FBResponseWithOK();
 }
 
