@@ -110,16 +110,13 @@ static void swizzledLaunchApp(id self, SEL _cmd, NSString *path, NSString *bundl
   if (waitForCompletion) {
     return [self synthesizeEventWithRecord:record error:error];
   }
-  // Off the main thread: the synthesizer call itself blocks its caller until XCTest's post-gesture idle wait
-  // ends (measured 2026-10-25: 13.9 s with the completion unawaited but the call on the main thread), so the
-  // HTTP handler returns here and the gesture is delivered from a background queue.
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-    [[XCUIDevice.sharedDevice eventSynthesizer] synthesizeEvent:record completion:(id)^(BOOL result, NSError *invokeError) {
-      if (!result) {
-        [FBLogger logFmt:@"Event synthesis finished with an error (not awaited): %@", invokeError];
-      }
-    }];
-  });
+  // Inline on the handler's thread, completion not awaited. Off the main thread (a background queue) XCTest
+  // drops the event: the reply came in 0.3 s and the card did not scroll (measured 2026-10-26 00:30).
+  [[XCUIDevice.sharedDevice eventSynthesizer] synthesizeEvent:record completion:(id)^(BOOL result, NSError *invokeError) {
+    if (!result) {
+      [FBLogger logFmt:@"Event synthesis finished with an error (not awaited): %@", invokeError];
+    }
+  }];
   return YES;
 }
 
